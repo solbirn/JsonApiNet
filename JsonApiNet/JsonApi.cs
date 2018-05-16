@@ -32,14 +32,16 @@ namespace JsonApiNet
             string json,
             IJsonApiTypeResolver typeResolver = null,
             IJsonApiPropertyResolver propertyResolver = null,
-            bool ignoreMissingRelationships = false)
+            bool ignoreMissingRelationships = false,
+            bool includeMissingRelationships = false)
         {
             var settings = new JsonApiSettings
             {
                 CreateResource = true,
                 PropertyResolver = propertyResolver,
                 TypeResolver = typeResolver,
-                IgnoreMissingRelationships = ignoreMissingRelationships
+                IgnoreMissingRelationships = ignoreMissingRelationships,
+                IncludeMissingRelationships = includeMissingRelationships
             };
 
             var singleElementType = typeof(T).GetSingleElementType();
@@ -66,6 +68,31 @@ namespace JsonApiNet
             return ResourceFromDocument(json, singleElementType, settings);
         }
 
+        public static string JsonDocumentFromResource(dynamic json, JsonApiSettings settings = null)
+        {
+            var serializer = MakeSerializer(settings);
+            //serializer.Settings.CreateResource = true;
+
+            return serializer.DocumentFromResource(json);
+        }
+
+        public static string DocumentFromResource(
+           dynamic json,
+           IJsonApiTypeResolver typeResolver = null,
+           IJsonApiPropertyResolver propertyResolver = null,
+           bool ignoreMissingRelationships = false)
+        {
+            var settings = new JsonApiSettings
+            {
+                CreateResource = true,
+                PropertyResolver = propertyResolver,
+                TypeResolver = typeResolver,
+                IgnoreMissingRelationships = ignoreMissingRelationships
+            };
+
+            return JsonDocumentFromResource(json, settings);
+        }
+
         private static JsonApiNetSerializer MakeSerializer(Type resultType, JsonApiSettings settings)
         {
             settings = settings ?? new JsonApiSettings();
@@ -76,6 +103,17 @@ namespace JsonApiNet
             {
                 settings.TypeResolver = new ReflectingTypeResolver(resultType);
             }
+
+            settings.PropertyResolver = settings.PropertyResolver ?? new JsonApiPropertyResolver();
+
+            return new JsonApiNetSerializer(settings);
+        }
+
+        private static JsonApiNetSerializer MakeSerializer(JsonApiSettings settings)
+        {
+            settings = settings ?? new JsonApiSettings();
+
+            settings.ResultType = typeof(string);
 
             settings.PropertyResolver = settings.PropertyResolver ?? new JsonApiPropertyResolver();
 

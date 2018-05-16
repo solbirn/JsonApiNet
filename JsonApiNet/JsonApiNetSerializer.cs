@@ -20,6 +20,12 @@ namespace JsonApiNet
             return document.Resource;
         }
 
+        public string DocumentFromResource(dynamic json)
+        {
+            var document = JsonDocument(json);
+            return document;
+        }
+
         public JsonApiDocument Document(string json)
         {
             return JsonConvert.DeserializeObject<JsonApiDocument>(
@@ -28,6 +34,17 @@ namespace JsonApiNet
                     {
                         ContractResolver = new ContractResolver(Settings)
                     });
+        }
+
+        public string JsonDocument(dynamic json)
+        {
+            return JsonConvert.SerializeObject(
+                json,
+                new JsonSerializerSettings
+                {
+                    ContractResolver = new ContractResolver(Settings),
+                    NullValueHandling = NullValueHandling.Ignore
+                });
         }
     }
 }

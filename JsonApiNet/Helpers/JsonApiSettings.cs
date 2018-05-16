@@ -14,5 +14,7 @@ namespace JsonApiNet.Helpers
         public bool? CreateResource { get; set; }
 
         public bool IgnoreMissingRelationships { get; set; }
+
+        public bool IncludeMissingRelationships { get; set; }
     }
 }
